@@ -11,7 +11,6 @@ LOG = logging.getLogger(__name__)
 
 NUMBER_OF_PMD_PHYSICAL_CORES = 1
 
-
 class DpdkConfig(object):
 
     def __init__(self):

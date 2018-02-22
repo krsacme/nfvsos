@@ -5,11 +5,11 @@ import logging
 import os
 import sys
 
+import conditions
 import utils
 import dpdk
 
 LOG = logging.getLogger(__name__)
-
 
 def main(argv=sys.argv[1:]):
     # Enable console logging
