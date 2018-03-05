@@ -40,6 +40,14 @@ def get_cpu_layout(sosdir):
     return cpu_layout
 
 
+def get_numa_node(cpu_layout, cpu):
+    for idx, numa_list in enumerate(cpu_layout):
+        for sibs in numa_list:
+            if cpu in sibs:
+                return idx, sibs
+    return None, None
+
+
 def _isol_cpus(sosdir):
     tuned_conf = os.path.join(
         sosdir, 'etc/tuned/cpu-partitioning-variables.conf')

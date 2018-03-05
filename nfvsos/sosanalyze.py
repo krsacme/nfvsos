@@ -39,6 +39,7 @@ def main(argv=sys.argv[1:]):
     nfvsos = NfvSosAnalyzer(args.sosdir)
     nfvsos.load_plugins()
     nfvsos.analyze()
+    nfvsos.show_result()
 
 
 class NfvSosAnalyzer(object):
@@ -50,7 +51,9 @@ class NfvSosAnalyzer(object):
         self.exit_process = False
 
     def get_commons(self):
-        return {}
+        return {
+            'sosdir': self.sosdir
+        }
 
     def _load(self, plugin_class):
         self.loaded_plugins.append((
@@ -94,19 +97,54 @@ class NfvSosAnalyzer(object):
     def analyze(self):
         for plugname, plug in self.loaded_plugins:
             try:
-                plug.analyze(self.sosdir)
+                plug.analyze()
             except KeyboardInterrupt:
                 raise
             except (OSError, IOError) as e:
                 if e.errno in fatal_fs_errors:
                     self.ui_log.error("")
-                    self.ui_log.error(" %s while setting up plugins"
+                    self.ui_log.error(" %s while analyzing logs"
                                       % e.strerror)
                     self.ui_log.error("")
                     self._exit(1)
-                self.handle_exception(plugname, "setup")
+                self.handle_exception(plugname, "analyze")
             except:
-                self.handle_exception(plugname, "setup")
+                self.handle_exception(plugname, "analyze")
+
+    def show_result(self):
+        outputs = self.get_results()
+        for name, obj in outputs.items():
+            print("-" * 79)
+            print("Checker({0}) Failed({1}) Passed({2})".format(
+                name, len(obj['failed']), len(obj['passed'])))
+            if obj['failed']:
+                print("\n".join(' * FAILED: ' + i for i in obj['failed']))
+            if obj['passed']:
+                print("\n".join(' * PASSED: ' + i for i in obj['passed']))
+        print("-" * 79)
+
+    def get_results(self):
+        outputs = {}
+        for plugname, plug in self.loaded_plugins:
+            try:
+                obj = {}
+                obj['failed'] = plug.failed()
+                obj['passed'] = plug.passed()
+                obj['status'] = plug.status()
+                outputs.update({plugname: obj})
+            except KeyboardInterrupt:
+                raise
+            except (OSError, IOError) as e:
+                if e.errno in fatal_fs_errors:
+                    self.ui_log.error("")
+                    self.ui_log.error(" %s while analyzing logs"
+                                      % e.strerror)
+                    self.ui_log.error("")
+                    self._exit(1)
+                self.handle_exception(plugname, "analyze")
+            except:
+                self.handle_exception(plugname, "analyze")
+        return outputs
 
 
 if __name__ == "__main__":

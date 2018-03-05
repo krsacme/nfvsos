@@ -40,6 +40,8 @@ class Checker(object):
 
     def __init__(self, commons):
         self.commons = commons
+        self.sosdir = commons.get('sosdir')
+        self.conditions = []
 
     @classmethod
     def name(cls):
@@ -47,11 +49,44 @@ class Checker(object):
             return cls.checker_name
         return cls.__name__.lower()
 
-    def analyze(self, base_path):
-        pass
+    def analyze(self, data=None):
+        for condition in self.conditions:
+            status, error = getattr(self, condition['validator'])(data)
+            condition['status'] = status
+            condition['error'] = error
+
+    def status(self):
+        for condition in self.conditions:
+            if 'status' not in condition:
+                raise Exception("Condition in checker (%s) does not have "
+                                "'status'" % self.checker_name)
+            if not condition['status']:
+                return False
+        return True
 
     def passed(self):
-        pass
+        outputs = []
+        for condition in self.conditions:
+            if condition['status']:
+                outputs.append(condition['name'] +
+                               ' - ' + condition['description'])
+        return outputs
 
     def failed(self):
+        outputs = []
+        for condition in self.conditions:
+            if 'status' not in condition:
+                raise Exception("Condition in checker (%s) does not have "
+                                "'status'" % self.checker_name)
+            if condition['status']:
+                continue
+            if type(condition.get('error')) == list:
+                outputs.extend([condition['name'] + ' - ' +
+                                i for i in condition['error']])
+                print(outputs)
+            elif condition.get('error'):
+                outputs.append(condition['name'] + ' - ' + condition['error'])
+        return outputs
+
+    def verbose(self):
         pass
