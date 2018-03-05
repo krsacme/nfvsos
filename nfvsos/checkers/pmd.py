@@ -1,6 +1,8 @@
 from nfvsos.checkers import Checker
 from nfvsos.utils import cpu_layout
 from nfvsos.utils import ovs_config
+from nfvsos.utils import tuned
+
 
 CONDITIONS = [
     {
@@ -12,6 +14,11 @@ CONDITIONS = [
         'name': 'Siblings',
         'description': 'Sibling threads to be associated together',
         'validator': '_validate_pmd_siblings'
+    },
+    {
+        'name': 'Tuned Isolation',
+        'description': 'PMD Cores should be isolated using tuned',
+        'validator': '_validate_pmd_isolate'
     }
 ]
 
@@ -74,4 +81,20 @@ class PMDCoreListChecker(Checker):
             status = False
             error = ["CPUs({0})'s sibling ({1}) is not added in PMD list".format(
                 k, v) for k, v in missing_siblings.items()]
+        return status, error
+
+    def _validate_pmd_isolate(self, data):
+        status = True
+        error = None
+        pmd_cpus = data['pmd_cpus']
+        tuned_isol = tuned.get_tuned_isolated_cores(self.sosdir)
+        missing = []
+        for item in pmd_cpus:
+            if item not in tuned_isol:
+                missing.append(item)
+        if missing:
+            status = False
+            error = ("CPUs (%s) should be added to tuned isolation "
+                     "config (%s) " % (', '.join([str(i) for i in missing]),
+                                       tuned.TUNED_CPU_CONFIG))
         return status, error

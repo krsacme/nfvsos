@@ -118,7 +118,7 @@ class NfvSosAnalyzer(object):
             print("Checker({0}) Failed({1}) Passed({2})".format(
                 name, len(obj['failed']), len(obj['passed'])))
             if obj['failed']:
-                print("\n".join(' * FAILED: ' + i for i in obj['failed']))
+                print("\n".join(' * >FAILED<: ' + i for i in obj['failed']))
             if obj['passed']:
                 print("\n".join(' * PASSED: ' + i for i in obj['passed']))
         print("-" * 79)

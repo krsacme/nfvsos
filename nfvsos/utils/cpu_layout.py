@@ -95,7 +95,7 @@ def _vcpu(sosdir):
         if '-' in item:
             start = int(item.split('-')[0])
             end = int(item.split('-')[1])
-            for i in range(start, end):
+            for i in range(start, end + 1):
                 vcpus.append(int(i))
         else:
             vcpus.append(int(item))

@@ -83,9 +83,10 @@ class Checker(object):
             if type(condition.get('error')) == list:
                 outputs.extend([condition['name'] + ' - ' +
                                 i for i in condition['error']])
-                print(outputs)
             elif condition.get('error'):
                 outputs.append(condition['name'] + ' - ' + condition['error'])
+            else:
+                outputs.append(condition['name'])
         return outputs
 
     def verbose(self):

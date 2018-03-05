@@ -1,4 +1,5 @@
 import os
+import re
 
 
 def get_ovs_config_socmem(sosdir):
