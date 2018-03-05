@@ -4,6 +4,7 @@ import argparse
 from collections import deque
 import logging
 import os
+from textwrap import wrap, fill
 import traceback
 import sys
 
@@ -118,10 +119,18 @@ class NfvSosAnalyzer(object):
             print("Checker({0}) Failed({1}) Passed({2})".format(
                 name, len(obj['failed']), len(obj['passed'])))
             if obj['failed']:
-                print("\n".join(' * >FAILED<: ' + i for i in obj['failed']))
+                self.wrap_print(">FAILED<", obj['failed'])
             if obj['passed']:
-                print("\n".join(' * PASSED: ' + i for i in obj['passed']))
+                self.wrap_print("PASSED", obj['passed'])
         print("-" * 79)
+
+
+    def wrap_print(self, text, items):
+        for item in items:
+            wrapped = wrap(' * ' + text + ': ' + item, 77)
+            print(wrapped[0])
+            print('\n'.join('   ' + j for j in wrapped[1:]))
+
 
     def get_results(self):
         outputs = {}
