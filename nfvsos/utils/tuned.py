@@ -1,7 +1,7 @@
 import os
 import re
 
-TUNED_CPU_CONFIG = '/etc/tuned/cpu-partitioning-variables.conf'
+TUNED_CPU_CONFIG = 'etc/tuned/cpu-partitioning-variables.conf'
 
 def get_tuned_isolated_cores(sosdir):
     isol = []
