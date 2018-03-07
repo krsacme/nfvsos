@@ -124,13 +124,12 @@ class NfvSosAnalyzer(object):
                 self.wrap_print("PASSED", obj['passed'])
         print("-" * 79)
 
-
     def wrap_print(self, text, items):
         for item in items:
             wrapped = wrap(' * ' + text + ': ' + item, 77)
             print(wrapped[0])
-            print('\n'.join('   ' + j for j in wrapped[1:]))
-
+            if len(wrapped) > 1:
+                print('\n'.join('   ' + j for j in wrapped[1:]))
 
     def get_results(self):
         outputs = {}

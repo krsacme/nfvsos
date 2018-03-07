@@ -7,7 +7,7 @@ from nfvsos.utils import tuned
 CONDITIONS = [
     {
         'name': 'Siblings',
-        'description': 'Sibling threads to be associated together',
+        'description': 'Sibling threads should be associated together',
         'validator': '_validate_vcpu_siblings'
     },
     {
@@ -28,7 +28,6 @@ class VpcuListChecker(Checker):
 
     def analyze(self):
         numa_layout = cpu_layout.get_cpu_layout(self.sosdir)
-        print("calling: %s" % self.sosdir)
         vpcus = config.get_nova_vcpus(self.sosdir)
         data = {
             'numa_layout': numa_layout,
