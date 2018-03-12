@@ -1,6 +1,7 @@
 from nfvsos.checkers import Checker
 from nfvsos.utils import config
 from nfvsos.utils import cpu_layout
+from nfvsos.utils import system
 from nfvsos.utils import tuned
 
 TUNED_PROFILE_NAME = 'cpu-partitioning'
@@ -15,7 +16,14 @@ CONDITIONS = [
         'name': 'Tuned Active Profile',
         'description': 'Tuned Profile should be active with right profile',
         'validator': '_validate_active_profile'
-    }
+    },
+    {
+        'name': 'Tuned Config in cmdline',
+        'description': 'Tuned config should be applied on cmdline (reboot)',
+        'validator': '_validate_cmdline_config',
+        'matchers': ['tuned.non_isolcpus', 'nohz_full', 'rcu_nocbs']
+    },
+
 ]
 
 
@@ -61,4 +69,16 @@ class TunedChecker(Checker):
             status = False
             error = ("Tuned Profile '%s' is active. Expected Tuned profile "
                      "is '%s'" % (tuned_profile, TUNED_PROFILE_NAME))
+        return status, error
+
+    def _validate_cmdline_config(self, data):
+        status = True
+        error = None
+        cmdline = system.get_cmdline(self.sosdir)
+        for matcher in data.get('matchers'):
+            if matcher not in cmdline:
+                status = False
+                error = ("Cmdline(%s) does not contain tuned parameters" %
+                         (' '.join(cmdline)))
+                break
         return status, error

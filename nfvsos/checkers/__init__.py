@@ -50,7 +50,11 @@ class Checker(object):
         return cls.__name__.lower()
 
     def analyze(self, data=None):
+        if not data:
+            data = {}
         for condition in self.conditions:
+            data['matchers'] = (condition['matchers']
+                                if condition.get('matchers') else [])
             status, error = getattr(self, condition['validator'])(data)
             condition['status'] = status
             condition['error'] = error
@@ -86,7 +90,8 @@ class Checker(object):
             elif condition.get('error'):
                 outputs.append(condition['name'] + ' - ' + condition['error'])
             else:
-                outputs.append(condition['name'])
+                outputs.append(condition['name'] +
+                               ' - ' + condition['description'])
         return outputs
 
     def verbose(self):

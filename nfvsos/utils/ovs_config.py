@@ -24,6 +24,18 @@ def get_ovs_config_cores(sosdir, match_str):
             core_list.append(idx)
     return core_list
 
+
+def get_ovs_dpdk_enable_state(sosdir):
+    other_config_str = _get_ovsdb_other_config(sosdir)
+    if 'dpdk-init' not in other_config_str:
+        LOG.error("dpdk-init is not in other_config(%s)" %
+                  other_config_str)
+    value = other_config_str.split('dpdk-init=')[1].split(',')[0]
+    if 'true' in value:
+        return True
+    return False
+
+
 ###############################################################################
 
 
