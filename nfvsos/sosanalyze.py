@@ -19,10 +19,16 @@ LOG = logging.getLogger(__name__)
 
 def main(argv=sys.argv[1:]):
     # Enable console logging
+    log_formatter = logging.Formatter(
+        "%(levelname)s: %(module)s:  %(message)s")
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
     console_handler = logging.StreamHandler()
+    console_handler.setFormatter(log_formatter)
     root_logger.addHandler(console_handler)
+    for handler in logging.root.handlers:
+        handler.addFilter(logging.Filter('nfvsos'))
+
 
     # Arguments
     parser = argparse.ArgumentParser(

@@ -45,6 +45,10 @@ class DpdkConfigChecker(Checker):
     def _validate_lcore_no_isolation(self, data):
         lcores = ovs_config.get_ovs_config_cores(
             self.sosdir, 'dpdk-lcore-mask')
+        if not lcores:
+            error = "No CPUs configured as OVS-DPDK lcores"
+            return False, error
+
         isol_cores = tuned.get_tuned_isolated_cores(self.sosdir)
         overlap = [core for core in lcores if core in isol_cores]
         if not isol_cores:

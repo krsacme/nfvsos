@@ -1,15 +1,18 @@
+import logging
 import os
 import re
 
 TUNED_CPU_CONFIG = '/etc/tuned/cpu-partitioning-variables.conf'
 TUNED_PROFILE_PATH = '/etc/tuned/active_profile'
 
+LOG = logging.getLogger(__name__)
+
 
 def get_tuned_isolated_cores(sosdir):
     isol = []
     tuned_config = os.path.join(sosdir, TUNED_CPU_CONFIG[1:])
     if not os.path.exists(tuned_config):
-        print("no tuned config")
+        LOG.error("no tuned config")
         return isol
     with open(tuned_config) as f:
         data = f.read().strip().split('\n')
@@ -34,7 +37,7 @@ def get_tuned_profile(sosdir):
     profile = ''
     tuned_config = os.path.join(sosdir, TUNED_PROFILE_PATH[1:])
     if not os.path.exists(tuned_config):
-        print("no tuned config profile config")
+        LOG.error("no tuned config profile config")
         return profile
     with open(tuned_config) as f:
         profile = f.read().strip()

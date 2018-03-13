@@ -40,6 +40,10 @@ class VpcuListChecker(Checker):
         error = None
         missing_siblings = {}
         vpcus = data['vpcus']
+        if not vpcus:
+            error = "No CPUs configured as vcpu_pin_set"
+            return False, error
+
         numa_layout = data['numa_layout']
         cpus_in_numa = []
         for item in enumerate(numa_layout):
@@ -61,6 +65,10 @@ class VpcuListChecker(Checker):
         status = True
         error = None
         vpcus = data['vpcus']
+        if not vpcus:
+            error = "No CPUs configured as vcpu_pin_set"
+            return False, error
+
         tuned_isol = tuned.get_tuned_isolated_cores(self.sosdir)
         missing = []
         for item in vpcus:

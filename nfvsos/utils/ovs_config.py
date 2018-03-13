@@ -1,9 +1,13 @@
+import logging
 import os
 import re
 
+LOG = logging.getLogger(__name__)
 
 def get_ovs_config_socmem(sosdir):
     other_config_str = _get_ovsdb_other_config(sosdir)
+    if not other_config_str:
+        return []
     #value = other_config_str.split('dpdk-socket-mem=')[1]
     #value = value.strip('""')
     # print(value)
@@ -14,11 +18,13 @@ def get_ovs_config_socmem(sosdir):
 
 
 def get_ovs_config_cores(sosdir, match_str):
+    core_list = []
     other_config_str = _get_ovsdb_other_config(sosdir)
+    if not other_config_str:
+        return core_list
     value = other_config_str.split(match_str + '=')[1].split(',')[0]
     value = value.strip('""')
     bin_str = '{0:b}'.format(int(value, 16))
-    core_list = []
     for idx, val in enumerate(reversed(bin_str)):
         if int(val):
             core_list.append(idx)
@@ -30,9 +36,10 @@ def get_ovs_dpdk_enable_state(sosdir):
     if 'dpdk-init' not in other_config_str:
         LOG.error("dpdk-init is not in other_config(%s)" %
                   other_config_str)
-    value = other_config_str.split('dpdk-init=')[1].split(',')[0]
-    if 'true' in value:
-        return True
+    if other_config_str:
+        value = other_config_str.split('dpdk-init=')[1].split(',')[0]
+        if 'true' in value:
+            return True
     return False
 
 

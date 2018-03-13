@@ -46,6 +46,10 @@ class PMDCoreListChecker(Checker):
         pmd_cpus = data['pmd_cpus']
         numa_layout = data['numa_layout']
 
+        if not pmd_cpus:
+            error = "No CPUs configured as OVS-DPDK PMD cores"
+            return False, error
+
         cpus_in_numa = []
         for item in enumerate(numa_layout):
             cpus_in_numa.append(0)
@@ -67,6 +71,10 @@ class PMDCoreListChecker(Checker):
         missing_siblings = {}
         pmd_cpus = data['pmd_cpus']
         numa_layout = data['numa_layout']
+        if not pmd_cpus:
+            error = "No CPUs configured as OVS-DPDK PMD cores"
+            return False, error
+
         cpus_in_numa = []
         for item in enumerate(numa_layout):
             cpus_in_numa.append(0)
@@ -87,6 +95,10 @@ class PMDCoreListChecker(Checker):
         status = True
         error = None
         pmd_cpus = data['pmd_cpus']
+        if not pmd_cpus:
+            error = "No CPUs configured as OVS-DPDK PMD cores"
+            return False, error
+
         tuned_isol = tuned.get_tuned_isolated_cores(self.sosdir)
         missing = []
         for item in pmd_cpus:
