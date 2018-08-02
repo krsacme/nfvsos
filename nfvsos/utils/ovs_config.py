@@ -48,6 +48,8 @@ def get_ovs_dpdk_enable_state(sosdir):
 
 def _get_ovsdb_other_config(sosdir):
     dname = os.path.join(sosdir, 'sos_commands/openvswitch')
+    if not os.path.exists(dname):
+        return ""
     fname = None
     for i in os.listdir(dname):
         name = os.path.join(dname, i)
@@ -58,7 +60,7 @@ def _get_ovsdb_other_config(sosdir):
         return None
     lines = []
 
-    # Gets the conent of 'Open_vSwitch table' section in ovsdb-client dump
+    # Gets the content of 'Open_vSwitch table' section in ovsdb-client dump
     with open(fname) as f:
         matching = False
         for line in f:

@@ -2,6 +2,7 @@ from nfvsos.checkers import Checker
 from nfvsos.utils import cpu_layout
 from nfvsos.utils import ovs_config
 from nfvsos.utils import tuned
+from nfvsos.utils import utilities
 
 
 CONDITIONS = [
@@ -59,8 +60,8 @@ class PMDCoreListChecker(Checker):
 
         if 0 in cpus_in_numa:
             status = False
-            err_numas = ', '.join(
-                [str(k) for k, v in enumerate(cpus_in_numa) if v == 0])
+            err_numas = utilities.convert_to_range(
+                [k for k, v in enumerate(cpus_in_numa) if v == 0])
             error = ("Numa (%s) does not have any PMD CPUs allocated" %
                      err_numas)
         return status, error
@@ -106,7 +107,8 @@ class PMDCoreListChecker(Checker):
                 missing.append(item)
         if missing:
             status = False
+            missing_str = utilities.convert_to_range(missing)
             error = ("CPUs (%s) should be added to tuned isolation "
-                     "config (%s) " % (', '.join([str(i) for i in missing]),
+                     "config (%s) " % (missing_str,
                                        tuned.TUNED_CPU_CONFIG))
         return status, error

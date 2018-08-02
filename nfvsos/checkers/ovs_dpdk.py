@@ -40,7 +40,7 @@ class DpdkConfigChecker(Checker):
         return status, error
 
     def _validate_socket_mem(self, data):
-        return False, None
+        return False, "NOT IMPLEMENTED"
 
     def _validate_lcore_no_isolation(self, data):
         lcores = ovs_config.get_ovs_config_cores(
@@ -49,6 +49,8 @@ class DpdkConfigChecker(Checker):
             error = "No CPUs configured as OVS-DPDK lcores"
             return False, error
 
+        status = True
+        error = ''
         isol_cores = tuned.get_tuned_isolated_cores(self.sosdir)
         overlap = [core for core in lcores if core in isol_cores]
         if not isol_cores:

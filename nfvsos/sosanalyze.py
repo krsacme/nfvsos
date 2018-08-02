@@ -15,7 +15,7 @@ from nfvsos.checkers import import_plugin
 
 
 LOG = logging.getLogger(__name__)
-
+fatal_fs_errors = []
 
 def main(argv=sys.argv[1:]):
     # Enable console logging
@@ -48,6 +48,15 @@ def main(argv=sys.argv[1:]):
     nfvsos.analyze()
     nfvsos.show_result()
 
+class COLORS:
+    HEADER = '\033[96m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[32m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 class NfvSosAnalyzer(object):
 
@@ -122,20 +131,26 @@ class NfvSosAnalyzer(object):
         outputs = self.get_results()
         for name, obj in outputs.items():
             print("-" * 79)
-            print("Checker({0}) Failed({1}) Passed({2})".format(
+            print((COLORS.HEADER + "Checker({0}) Failed({1}) Passed({2})" + COLORS.ENDC).format(
                 name, len(obj['failed']), len(obj['passed'])))
             if obj['failed']:
-                self.wrap_print(">FAILED<", obj['failed'])
+                self.wrap_print("FAILED", obj['failed'])
             if obj['passed']:
                 self.wrap_print("PASSED", obj['passed'])
         print("-" * 79)
 
-    def wrap_print(self, text, items):
+    def wrap_print(self, state, items):
         for item in items:
-            wrapped = wrap(' * ' + text + ': ' + item, 77)
-            print(wrapped[0])
+            wrapped = wrap(' * ' + state + ': ' + item, 77)
+            self.print_overload(state, wrapped[0])
             if len(wrapped) > 1:
-                print('\n'.join('   ' + j for j in wrapped[1:]))
+                self.print_overload(state, '\n'.join('   ' + j for j in wrapped[1:]))
+
+    def print_overload(self, state, val):
+        start = COLORS.OKGREEN
+        if 'FAILED' in state:
+            start = COLORS.FAIL
+        print(start + val + COLORS.ENDC)
 
     def get_results(self):
         outputs = {}

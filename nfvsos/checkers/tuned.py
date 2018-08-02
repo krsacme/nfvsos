@@ -19,7 +19,7 @@ CONDITIONS = [
     },
     {
         'name': 'Tuned Config in cmdline',
-        'description': 'Tuned config should be applied on cmdline (reboot)',
+        'description': 'Tuned config should be applied on /proc/cmdline',
         'validator': '_validate_cmdline_config',
         'matchers': ['tuned.non_isolcpus', 'nohz_full', 'rcu_nocbs']
     },
@@ -74,11 +74,15 @@ class TunedChecker(Checker):
     def _validate_cmdline_config(self, data):
         status = True
         error = None
-        cmdline = system.get_cmdline(self.sosdir)
+        cmdline = ' '.join(system.get_cmdline(self.sosdir))
+        missing_matchers = []
         for matcher in data.get('matchers'):
             if matcher not in cmdline:
                 status = False
-                error = ("Cmdline(%s) does not contain tuned parameters" %
-                         (' '.join(cmdline)))
-                break
+                missing_matchers.append(matcher)
+
+        if not status:
+            error = ("Tuned matchers (%s) is not found in the command line "
+                     "of the node, available cmdline args are (%s)" %
+                     (', '.join(missing_matchers), cmdline))
         return status, error

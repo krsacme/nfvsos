@@ -1,5 +1,18 @@
+import glob
 import os
 import re
+
+from nfvsos.utils import config
+
+
+def _get_numa_node(sosdir, cpu_num):
+    node_path = os.path.join(sosdir, 'sys/devices/system/node/')
+    for node in glob.glob(os.path.join(node_path, 'node*')):
+        node_id = int(node.split('/')[-1].strip('node'))
+        cpulist_path = os.path.join(node, 'cpulist')
+        cpu_list = _expand_cpus(_read(cpulist_path))
+        if cpu_num in cpu_list:
+            return node_id
 
 
 def get_cpu_layout(sosdir):
@@ -28,6 +41,11 @@ def get_cpu_layout(sosdir):
             if not item.strip('node').isdigit():
                 continue
             numa_node = int(item.strip('node'))
+
+        # 0 is valid node id, check with None
+        if numa_node is None:
+            numa_node = _get_numa_node(sosdir, int(val))
+
         sib_path = os.path.join(path, 'topology/thread_siblings_list')
         sibs_content = _read(sib_path)
         sibs_content = sibs_content.split(',')
@@ -75,13 +93,21 @@ def _isol_cpus(sosdir):
     return isol
 
 
+def _expand_cpus(cpu_str):
+    cpus = []
+    for item in cpu_str.split(','):
+        if '-' in item:
+            start = int(item.split('-')[0])
+            end = int(item.split('-')[1])
+            for i in range(start, end + 1):
+                cpus.append(int(i))
+        else:
+            cpus.append(int(item))
+    return cpus
+
+
 def _vcpu(sosdir):
-    nova_conf = os.path.join(sosdir, 'etc/nova/nova.conf')
-    content = _read(nova_conf)
-    parts = re.findall(r"(^vcpu_pin_set=([0-9,-]+)$)",
-                       content, re.MULTILINE)
-    vcpus_str = None
-    vcpus = []
+    vcpus = config.get_nova_vcpus(sosdir)
     if not parts:
         return vcpus
     try:
@@ -91,14 +117,7 @@ def _vcpu(sosdir):
         LOG.info(content)
         LOG.info("-------------------------------------------------------")
 
-    for item in vcpus_str.split(','):
-        if '-' in item:
-            start = int(item.split('-')[0])
-            end = int(item.split('-')[1])
-            for i in range(start, end + 1):
-                vcpus.append(int(i))
-        else:
-            vcpus.append(int(item))
+    vpcus = _expand_cpus(vcpus_str)
     return vcpus
 
 

@@ -2,6 +2,7 @@ from nfvsos.checkers import Checker
 from nfvsos.utils import config
 from nfvsos.utils import cpu_layout
 from nfvsos.utils import tuned
+from nfvsos.utils import utilities
 
 
 CONDITIONS = [
@@ -76,7 +77,8 @@ class VpcuListChecker(Checker):
                 missing.append(item)
         if missing:
             status = False
-            error = ("CPUs (%s) should be added to tuned isolation "
-                     "config (%s) " % (', '.join([str(i) for i in missing]),
+            missing_str = utilities.convert_to_range(missing)
+            error=("CPUs (%s) should be added to tuned isolation "
+                     "config (%s) " % (missing_str,
                                        tuned.TUNED_CPU_CONFIG))
         return status, error
