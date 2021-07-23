@@ -28,6 +28,7 @@ class VpcuListChecker(Checker):
         self.conditions = CONDITIONS
 
     def analyze(self):
+        print("KRS: HERE")
         numa_layout = cpu_layout.get_cpu_layout(self.sosdir)
         vpcus = config.get_nova_vcpus(self.sosdir)
         data = {

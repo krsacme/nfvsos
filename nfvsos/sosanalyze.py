@@ -34,6 +34,9 @@ def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(
         description='Analyze the sosreport')
     parser.add_argument('sosdir', help='sos directory path')
+    parser.add_argument('-p', '--plugin',
+                        dest='specific_plugin',
+                        help='specific plugin to be used instead of all plugins')
     args = parser.parse_args(argv)
 
     if not os.path.isabs(args.sosdir):
@@ -43,7 +46,7 @@ def main(argv=sys.argv[1:]):
         LOG.error("Provide the path of sosreport directory (extracted)")
         sys.exit(1)
 
-    nfvsos = NfvSosAnalyzer(args.sosdir)
+    nfvsos = NfvSosAnalyzer(args.sosdir, args.specific_plugin)
     nfvsos.load_plugins()
     nfvsos.analyze()
     nfvsos.show_result()
@@ -60,8 +63,9 @@ class COLORS:
 
 class NfvSosAnalyzer(object):
 
-    def __init__(self, sosdir):
+    def __init__(self, sosdir, specific_plugin):
         self.sosdir = sosdir
+        self.specific_plugin = specific_plugin
         self.loaded_plugins = deque()
         self.raise_plugins = False
         self.exit_process = False
@@ -112,6 +116,10 @@ class NfvSosAnalyzer(object):
 
     def analyze(self):
         for plugname, plug in self.loaded_plugins:
+            if self.specific_plugin and plugname not in self.specific_plugin:
+                LOG.debug("Specific plugin run, skip %s" % plugname)
+                continue
+
             try:
                 plug.analyze()
             except KeyboardInterrupt:
@@ -128,31 +136,31 @@ class NfvSosAnalyzer(object):
                 self.handle_exception(plugname, "analyze")
 
     def show_result(self):
-        outputs = self.get_results()
+        outputs = self._get_results()
         for name, obj in outputs.items():
             print("-" * 79)
             print((COLORS.HEADER + "Checker({0}) Failed({1}) Passed({2})" + COLORS.ENDC).format(
                 name, len(obj['failed']), len(obj['passed'])))
             if obj['failed']:
-                self.wrap_print("FAILED", obj['failed'])
+                self._wrap_print("FAILED", obj['failed'])
             if obj['passed']:
-                self.wrap_print("PASSED", obj['passed'])
+                self._wrap_print("PASSED", obj['passed'])
         print("-" * 79)
 
-    def wrap_print(self, state, items):
+    def _wrap_print(self, state, items):
         for item in items:
             wrapped = wrap(' * ' + state + ': ' + item, 77)
-            self.print_overload(state, wrapped[0])
+            self._print_overload(state, wrapped[0])
             if len(wrapped) > 1:
-                self.print_overload(state, '\n'.join('   ' + j for j in wrapped[1:]))
+                self._print_overload(state, '\n'.join('   ' + j for j in wrapped[1:]))
 
-    def print_overload(self, state, val):
+    def _print_overload(self, state, val):
         start = COLORS.OKGREEN
         if 'FAILED' in state:
             start = COLORS.FAIL
         print(start + val + COLORS.ENDC)
 
-    def get_results(self):
+    def _get_results(self):
         outputs = {}
         for plugname, plug in self.loaded_plugins:
             try:

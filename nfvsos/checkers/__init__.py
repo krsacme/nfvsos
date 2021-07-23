@@ -79,6 +79,7 @@ class Checker(object):
     def failed(self):
         outputs = []
         for condition in self.conditions:
+            print(condition)
             if 'status' not in condition:
                 raise Exception("Condition in checker (%s) does not have "
                                 "'status'" % self.checker_name)
